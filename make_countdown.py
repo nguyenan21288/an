@@ -27,23 +27,24 @@ N = int(FPS * DUR)
 FONT_BLACK = "/usr/share/fonts/opentype/inter/InterDisplay-Black.otf"
 FONT_BOLD = "/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf"
 
-# label -> (image, crop x, crop y, crop size)  — square face crops that hide the name
+# label -> (image, crop box)  — full 4:5 portrait so the artist name stays readable
 ARTISTS = [
-    ("A", "A.jpg", 200, 60, 520),
-    ("B", "B.jpg", 340, 70, 540),
-    ("C", "C.jpg", 270, 40, 540),
-    ("D", "D.jpg", 240, 45, 540),
+    ("A", "A.jpg", (112, 0, 976, 1080)),
+    ("B", "B.jpg", (112, 5, 968, 1075)),
+    ("C", "C.jpg", (112, 0, 968, 1070)),
+    ("D", "D.jpg", (112, 0, 968, 1070)),
 ]
 ACCENT = [(255, 214, 10), (255, 214, 10), (255, 214, 10), (255, 214, 10)]
 YELLOW = (255, 214, 10)
 
 # layout (1x coordinates)
-TILE = 228
-GAP = 20
-ROW_Y = 760
+TILE = 236  # width
+TILE_H = 295  # height (4:5)
+GAP = 16
+ROW_Y = 720
 ROW_X0 = (W - (4 * TILE + 3 * GAP)) // 2
-TITLE_Y = 560
-RING_CY = 1250
+TITLE_Y = 520
+RING_CY = 1330
 RING_R = 150
 
 
@@ -63,17 +64,17 @@ def s(v):
 
 def load_tiles():
     tiles = []
-    size = s(TILE)
-    radius = s(26)
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size - 1, size - 1), radius, fill=255)
-    for label, fn, x, y, sz in ARTISTS:
+    size = (s(TILE), s(TILE_H))
+    radius = s(22)
+    mask = Image.new("L", size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius, fill=255)
+    for label, fn, box in ARTISTS:
         im = Image.open(os.path.join(HERE, "assets", fn)).convert("RGB")
-        im = im.crop((x, y, x + sz, y + sz)).resize((size, size), Image.LANCZOS).convert("RGBA")
+        im = im.crop(box).resize(size, Image.LANCZOS).convert("RGBA")
         im.putalpha(mask)
         # white border
         border = s(7)
-        framed = Image.new("RGBA", (size + 2 * border, size + 2 * border), (0, 0, 0, 0))
+        framed = Image.new("RGBA", (size[0] + 2 * border, size[1] + 2 * border), (0, 0, 0, 0))
         bmask = Image.new("L", framed.size, 0)
         ImageDraw.Draw(bmask).rounded_rectangle(
             (0, 0, framed.size[0] - 1, framed.size[1] - 1), radius + border, fill=255
@@ -177,11 +178,11 @@ def main():
         for k, (lbl, tile) in enumerate(tiles):
             p = ease_out_back((t - 0.12 - k * 0.07) / 0.4, 2.2)
             cx = ROW_X0 + k * (TILE + GAP) + TILE / 2
-            cy = ROW_Y + TILE / 2 + 8 * math.sin(t * 2 * math.pi * 0.8 + k * 0.9) * min(1, max(0, t - 0.6) * 3)
+            cy = ROW_Y + TILE_H / 2 + 8 * math.sin(t * 2 * math.pi * 0.8 + k * 0.9) * min(1, max(0, t - 0.6) * 3)
             rot = (1 - p) * (-12 if k % 2 == 0 else 12)
             paste_center(cv, tile, s(cx), s(cy), scale=p, alpha=min(1, p * 1.5), rot=rot)
             pb = ease_out_back((t - 0.3 - k * 0.07) / 0.35, 2.5)
-            paste_center(cv, badges[k], s(cx), s(ROW_Y + TILE + 22), scale=pb)
+            paste_center(cv, badges[k], s(cx), s(ROW_Y + TILE_H + 34), scale=pb)
 
         # --- countdown ring: drains over 3s
         ring_in = ease_out_cubic(t / 0.3)
