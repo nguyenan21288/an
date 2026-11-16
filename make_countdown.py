@@ -209,7 +209,7 @@ def encode(frames_dir, prefix, dur=DUR):
                          "-vendor", "apl0", os.path.join(OUT, f"{prefix}_alpha.mov")], check=True)
     subprocess.run(ff + ["-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "4M", "-auto-alt-ref", "0",
                          os.path.join(OUT, f"{prefix}_alpha.webm")], check=True)
-    for name, color in ((f"{prefix}_greenscreen.mp4", "0x00FF00"), (f"{prefix}_preview.mp4", "0x3a3a46")):
+    for name, color in ((f"{prefix}_greenscreen.mp4", "0x00FF00"), (f"{prefix}_bg_3a3a46.mp4", "0x3a3a46")):
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error",
                         "-f", "lavfi", "-i", f"color=c={color}:s={W}x{H}:r={FPS}:d={dur}",
                         "-framerate", str(FPS), "-i", seq,
