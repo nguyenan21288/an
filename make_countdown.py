@@ -198,20 +198,24 @@ def main():
 
         cv.resize((W, H), Image.LANCZOS).save(os.path.join(FRAMES, f"f_{i:03d}.png"))
 
-    seq = os.path.join(FRAMES, "f_%03d.png")
+    encode(FRAMES, "countdown")
+    print("done", N, "frames")
+
+
+def encode(frames_dir, prefix, dur=DUR):
+    seq = os.path.join(frames_dir, "f_%03d.png")
     ff = ["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", seq]
     subprocess.run(ff + ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le",
-                         "-vendor", "apl0", os.path.join(OUT, "countdown_alpha.mov")], check=True)
+                         "-vendor", "apl0", os.path.join(OUT, f"{prefix}_alpha.mov")], check=True)
     subprocess.run(ff + ["-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "4M", "-auto-alt-ref", "0",
-                         os.path.join(OUT, "countdown_alpha.webm")], check=True)
-    for name, color in (("countdown_greenscreen.mp4", "0x00FF00"), ("preview.mp4", "0x3a3a46")):
+                         os.path.join(OUT, f"{prefix}_alpha.webm")], check=True)
+    for name, color in ((f"{prefix}_greenscreen.mp4", "0x00FF00"), (f"{prefix}_preview.mp4", "0x3a3a46")):
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error",
-                        "-f", "lavfi", "-i", f"color=c={color}:s={W}x{H}:r={FPS}:d={DUR}",
+                        "-f", "lavfi", "-i", f"color=c={color}:s={W}x{H}:r={FPS}:d={dur}",
                         "-framerate", str(FPS), "-i", seq,
                         "-filter_complex", "[0][1]overlay=shortest=1,format=yuv420p",
                         "-c:v", "libx264", "-crf", "16", "-movflags", "+faststart",
                         os.path.join(OUT, name)], check=True)
-    print("done", N, "frames")
 
 
 if __name__ == "__main__":
