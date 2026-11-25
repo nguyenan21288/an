@@ -1,3 +1,2 @@
-output/frames/
-output/answer_frames/
+output/*frames/
 output/*.zip

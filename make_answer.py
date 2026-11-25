@@ -1,4 +1,4 @@
-"""Render the 3-second answer reveal (artist D — Hime) in the same clean style, transparent background.
+"""Render the 3-second answer reveal (answer set in make_countdown.SETS) in the same clean style, transparent background.
 
 Starts from the exact end state of the countdown (title + A B C D row) so the two clips cut together
 seamlessly, then fades A/B/C away and brings D to the centre.
@@ -16,11 +16,11 @@ from make_countdown import (ARTISTS, F_BOLD, F_MEDIUM, F_SEMI, FPS, GAP, H, HERE
                             TILE, TILE_H, TITLE_Y, W, WHITE, ease_in_out, ease_out_quint, paste_center, s,
                             soft_shadow, text_layer)
 
-FRAMES = os.path.join(OUT, "answer_frames")
+FRAMES = os.path.join(OUT, mc.PREFIX + "answer_frames")
 DUR = 3.0
 N = int(FPS * DUR)
-ANSWER = 3  # index of D in ARTISTS
-ANSWER_NAME = "Hime"
+ANSWER = mc.CFG["answer"]  # index in ARTISTS
+ANSWER_NAME = mc.CFG["answer_name"]
 
 BIG_W, BIG_H = 432, 540  # enlarged answer tile (4:5)
 BIG_CY = 960
@@ -51,7 +51,7 @@ def main():
     q2 = soft_shadow(text_layer("artist nào?", ImageFont.truetype(F_BOLD, s(104)), PINK, -s(2)))
     a1 = soft_shadow(text_layer("Đáp án là", ImageFont.truetype(F_MEDIUM, s(58)), WHITE, s(1)))
     a2 = soft_shadow(text_layer(ANSWER_NAME, ImageFont.truetype(F_BOLD, s(120)), PINK, -s(2)))
-    tag = soft_shadow(text_layer("D", ImageFont.truetype(F_SEMI, s(46)), WHITE), blur=s(10), opacity=0.3)
+    tag = soft_shadow(text_layer(ARTISTS[ANSWER][0], ImageFont.truetype(F_SEMI, s(46)), WHITE), blur=s(10), opacity=0.3)
 
     for i in range(N):
         t = i / FPS
@@ -103,7 +103,7 @@ def main():
 
         cv.resize((W, H), Image.LANCZOS).save(os.path.join(FRAMES, f"f_{i:03d}.png"))
 
-    mc.encode(FRAMES, "answer", DUR)
+    mc.encode(FRAMES, mc.PREFIX + "answer", DUR)
     print("done", N, "frames")
 
 

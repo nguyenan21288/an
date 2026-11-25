@@ -18,7 +18,6 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "output")
-FRAMES = os.path.join(OUT, "frames")
 
 W, H = 1080, 1920
 SS = 2  # supersampling factor
@@ -35,12 +34,34 @@ WHITE = (255, 255, 255)
 PINK = (248, 200, 218)  # pastel pink
 
 # label -> (image, crop box)  — full 4:5 portrait so the artist name stays readable
-ARTISTS = [
-    ("A", "A.jpg", (112, 0, 976, 1080)),
-    ("B", "B.jpg", (112, 5, 968, 1075)),
-    ("C", "C.jpg", (112, 0, 968, 1070)),
-    ("D", "D.jpg", (112, 0, 968, 1070)),
-]
+SETS = {
+    "set1": {  # answer: D - Hime
+        "prefix": "",
+        "answer": 3,
+        "answer_name": "Hime",
+        "artists": [
+            ("A", "A.jpg", (112, 0, 976, 1080)),
+            ("B", "B.jpg", (112, 5, 968, 1075)),
+            ("C", "C.jpg", (112, 0, 968, 1070)),
+            ("D", "D.jpg", (112, 0, 968, 1070)),
+        ],
+    },
+    "set2": {  # answer: D - Phương Vy
+        "prefix": "set2_",
+        "answer": 3,
+        "answer_name": "Phương Vy",
+        "artists": [
+            ("A", "set2/A.png", (0, 0, 1040, 1300)),
+            ("B", "set2/B.png", (0, 0, 1036, 1295)),
+            ("C", "set2/C.png", (0, 0, 1028, 1285)),
+            ("D", "set2/D.png", (0, 0, 1044, 1305)),
+        ],
+    },
+}
+SET = os.environ.get("ARTIST_SET", "set1")  # run with ARTIST_SET=set2 for the second quiz
+CFG = SETS[SET]
+PREFIX = CFG["prefix"]
+ARTISTS = CFG["artists"]
 
 # layout (1x coordinates)
 TILE = 236  # width
@@ -131,6 +152,9 @@ def paste_center(canvas, layer, cx, cy, scale=1.0, alpha=1.0):
     canvas.alpha_composite(layer, (max(0, x), max(0, y)), (max(0, -x), max(0, -y)))
 
 
+FRAMES = os.path.join(OUT, PREFIX + "frames")
+
+
 def main():
     shutil.rmtree(FRAMES, ignore_errors=True)
     os.makedirs(FRAMES, exist_ok=True)
@@ -198,7 +222,7 @@ def main():
 
         cv.resize((W, H), Image.LANCZOS).save(os.path.join(FRAMES, f"f_{i:03d}.png"))
 
-    encode(FRAMES, "countdown")
+    encode(FRAMES, PREFIX + "countdown")
     print("done", N, "frames")
 
 
